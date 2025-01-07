@@ -33,7 +33,7 @@ app.put("/upload", upload.single("file"), async (req, res) => {
   }
   const newUpload = await client.upload.create({
     data: {
-      uploadUrl: path.join(__dirname, "uploads", file?.filename),
+      uploadUrl: path.join(__dirname, "..", "/uploads", file?.filename),
     },
   });
   res.json({ message: "Upload successful", uploadId: newUpload.id });
