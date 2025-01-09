@@ -3,6 +3,7 @@ import path from "path";
 import { exec } from "child_process";
 import { Status, Upload } from "@prisma/client";
 import db from "./db";
+import fs from "fs/promises";
 
 let isTranscoding = false;
 
@@ -20,7 +21,7 @@ async function Transcode(upload: Upload) {
     // Ensure the directory exists
     await mkdir(baseOutPath, { recursive: true });
 
-    const command = `ffmpeg -i ${upload.uploadUrl} -s 640x360 -c:v h264 -b:v 800k -c:a aac -b:a 128k -hls_time 6 -hls_playlist_type vod -hls_segment_filename "${baseOutPath}/360p_%03d.ts" ${baseOutPath}/360p.m3u8`;
+    const command = `ffmpeg -i ${upload.uploadUrl} -s 640x360 -c:v h264 -b:v 800k -c:a aac -b:a 128k -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${baseOutPath}/360p_%03d.ts" ${baseOutPath}/360p.m3u8`;
 
     exec(command, async (err, stdout, stderr) => {
       console.log(stdout);
@@ -30,6 +31,8 @@ async function Transcode(upload: Upload) {
         isTranscoding = false;
         return;
       }
+      // unlink the original file
+      await fs.unlink(upload.uploadUrl);
 
       // Update status in database
       await db.upload.update({
